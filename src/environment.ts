@@ -9,10 +9,16 @@ import { z } from "zod";
  */
 export const twitterEnvSchema = z.object({
   // Required API credentials
-  TWITTER_API_KEY: z.string(),
-  TWITTER_API_SECRET_KEY: z.string(),
-  TWITTER_ACCESS_TOKEN: z.string(),
-  TWITTER_ACCESS_TOKEN_SECRET: z.string(),
+  TWITTER_API_KEY: z.string().optional(),
+  TWITTER_API_SECRET_KEY: z.string().optional(),
+  TWITTER_ACCESS_TOKEN: z.string().optional(),
+  TWITTER_ACCESS_TOKEN_SECRET: z.string().optional(),
+
+  // Scraper credentials
+  TWITTER_USERNAME: z.string().optional(),
+  TWITTER_PASSWORD: z.string().optional(),
+  TWITTER_EMAIL: z.string().optional(),
+  TWITTER_2FA_SECRET: z.string().optional(),
 
   // Core configuration
   TWITTER_DRY_RUN: z.string().default("false"),
@@ -122,6 +128,22 @@ export async function validateTwitterConfig(
       TWITTER_ACCESS_TOKEN_SECRET:
         config.TWITTER_ACCESS_TOKEN_SECRET ??
         getSetting(runtime, "TWITTER_ACCESS_TOKEN_SECRET") ??
+        "",
+      TWITTER_USERNAME:
+        config.TWITTER_USERNAME ??
+        getSetting(runtime, "TWITTER_USERNAME") ??
+        "",
+      TWITTER_PASSWORD:
+        config.TWITTER_PASSWORD ??
+        getSetting(runtime, "TWITTER_PASSWORD") ??
+        "",
+      TWITTER_EMAIL:
+        config.TWITTER_EMAIL ??
+        getSetting(runtime, "TWITTER_EMAIL") ??
+        "",
+      TWITTER_2FA_SECRET:
+        config.TWITTER_2FA_SECRET ??
+        getSetting(runtime, "TWITTER_2FA_SECRET") ??
         "",
       TWITTER_DRY_RUN: String(
         (
@@ -235,14 +257,18 @@ export async function validateTwitterConfig(
     };
 
     // Validate required credentials
-    if (
-      !validatedConfig.TWITTER_API_KEY ||
-      !validatedConfig.TWITTER_API_SECRET_KEY ||
-      !validatedConfig.TWITTER_ACCESS_TOKEN ||
-      !validatedConfig.TWITTER_ACCESS_TOKEN_SECRET
-    ) {
+    const hasApiCredentials =
+      !!validatedConfig.TWITTER_API_KEY &&
+      !!validatedConfig.TWITTER_API_SECRET_KEY &&
+      !!validatedConfig.TWITTER_ACCESS_TOKEN &&
+      !!validatedConfig.TWITTER_ACCESS_TOKEN_SECRET;
+
+    const hasScraperCredentials =
+      !!validatedConfig.TWITTER_USERNAME && !!validatedConfig.TWITTER_PASSWORD;
+
+    if (!hasApiCredentials && !hasScraperCredentials) {
       throw new Error(
-        "Twitter API credentials are required. Please set TWITTER_API_KEY, TWITTER_API_SECRET_KEY, TWITTER_ACCESS_TOKEN, and TWITTER_ACCESS_TOKEN_SECRET",
+        "Twitter credentials are required. Please set either (TWITTER_API_KEY, TWITTER_API_SECRET_KEY, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET) OR (TWITTER_USERNAME, TWITTER_PASSWORD)",
       );
     }
 

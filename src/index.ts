@@ -29,15 +29,25 @@ export const TwitterPlugin: Plugin = {
       ? runtime.getSetting("TWITTER_ACCESS_TOKEN_SECRET")
       : process.env.TWITTER_ACCESS_TOKEN_SECRET;
 
-    if (!apiKey || !apiSecretKey || !accessToken || !accessTokenSecret) {
+    // Check for Scraper credentials
+    const username = hasGetSetting
+      ? runtime.getSetting("TWITTER_USERNAME")
+      : process.env.TWITTER_USERNAME;
+    const password = hasGetSetting
+      ? runtime.getSetting("TWITTER_PASSWORD")
+      : process.env.TWITTER_PASSWORD;
+
+    if (!username && (!apiKey || !apiSecretKey || !accessToken || !accessTokenSecret)) {
       const missing = [];
       if (!apiKey) missing.push("TWITTER_API_KEY");
       if (!apiSecretKey) missing.push("TWITTER_API_SECRET_KEY");
       if (!accessToken) missing.push("TWITTER_ACCESS_TOKEN");
       if (!accessTokenSecret) missing.push("TWITTER_ACCESS_TOKEN_SECRET");
+      if (!username) missing.push("TWITTER_USERNAME");
+      if (!password) missing.push("TWITTER_PASSWORD");
 
       logger.warn(
-        `Twitter API credentials not configured - Twitter functionality will be limited. Missing: ${missing.join(", ")}`,
+        `Twitter credentials not configured. Missing: ${missing.join(", ")}`,
       );
       logger.warn(
         "To enable Twitter functionality, please provide the missing credentials in your .env file",
